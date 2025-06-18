@@ -96,6 +96,15 @@ export async function login(username: string, password: string) {
 
 ---
 
+## protoファイルの共通管理
+
+- バックエンド（Rust）とフロントエンド（React）で**同じprotoファイルを共通利用**することで、API仕様のズレや型の不整合を防げます。
+- プロジェクトルート等に`proto/`ディレクトリを作成し、両者から参照できるようにします。
+- サーバー側は`tonic-build`、クライアント側は`protobuf-ts`や`ts-proto`等で**同じprotoから型やコードを自動生成**します。
+- protoファイル自体は**gitで厳密にバージョン管理**し、生成物はgit管理対象外とする運用が推奨されます。
+
+---
+
 ## 参考
 
 - [gRPC-Web公式ドキュメント](https://grpc.io/docs/platforms/web/)
