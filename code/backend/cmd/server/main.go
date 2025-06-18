@@ -1,11 +1,11 @@
 package main
 
 import (
-	"log"
 	"net/http"
 	"os"
 	"sync"
 
+	"backend/internal/common"
 	login "backend/internal/login"
 	"backend/router"
 
@@ -17,20 +17,20 @@ func main() {
 	var wg sync.WaitGroup
 
 	// RESTサーバー
-	log.Println("Setting up REST handler for /api/login")
+	common.Info("Setting up REST handler for /api/login")
 	http.HandleFunc("/api/login", login.LoginHandler)
 	wg.Add(1)
 	go func() {
-		log.Println("Starting REST server at :8080")
+		common.Info("Starting REST server at :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
-			log.Println("REST server error:", err)
+			common.Error("REST server error: %v", err)
 			os.Exit(1)
 		}
 		wg.Done()
 	}()
 
 	// gRPCサーバー
-	log.Println("Setting up gRPC server")
+	common.Info("Setting up gRPC server")
 	grpcServer := grpc.NewServer()
 	router.InitAndRegisterGrpcServices(grpcServer)
 
@@ -49,9 +49,9 @@ func main() {
 			}
 			w.WriteHeader(http.StatusNotFound)
 		})
-		log.Println("Starting gRPC-Web server at :50051")
+		common.Info("Starting gRPC-Web server at :50051")
 		if err := http.ListenAndServe(":50051", mux); err != nil {
-			log.Println("gRPC-Web server error:", err)
+			common.Error("gRPC-Web server error: %v", err)
 			os.Exit(1)
 		}
 		wg.Done()

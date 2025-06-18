@@ -4,7 +4,6 @@ import (
 	"backend/internal/common"
 	"backend/internal/login"
 	auth "backend/internal/login/proto/api/proto"
-	"log"
 
 	"google.golang.org/grpc"
 )
@@ -14,7 +13,7 @@ func InitAndRegisterGrpcServices(grpcServer *grpc.Server) {
 	// DBパスは環境変数や設定ファイルから取得するのが理想
 	db, err := common.GetDB("../../data/app.db")
 	if err != nil {
-		log.Fatalf("[gRPC] DB接続エラー: %v", err)
+		common.Error("DB接続エラー: %v", err, "gRPC")
 	}
 	repo := login.NewUserRepository(db)
 	service := login.NewAuthService(repo)

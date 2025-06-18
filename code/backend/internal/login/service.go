@@ -1,13 +1,10 @@
 package login
 
 import (
+	"backend/internal/common"
 	"context"
 	"errors"
-	"log"
-	"os"
 )
-
-var serviceLogger = log.New(os.Stdout, "[Service] ", log.LstdFlags)
 
 type AuthService interface {
 	Authenticate(ctx context.Context, username, password string) (string, error)
@@ -23,17 +20,17 @@ func NewAuthService(repo UserRepository) AuthService {
 
 func (s *authService) Authenticate(ctx context.Context, username, password string) (string, error) {
 	// サービス層での認証処理開始ログ
-	serviceLogger.Printf("Authenticate called. Username: %s", username)
+	common.Info("Authenticate called. Username: %s", username, "Service")
 	user, err := s.repo.FindByUsername(ctx, username)
 	if err != nil {
-		serviceLogger.Printf("ユーザー検索エラー: %v", err)
+		common.Error("ユーザー検索エラー: %v", err, "Service")
 		return "", err
 	}
 	if user == nil || user.Password != password {
-		serviceLogger.Printf("認証失敗: %s", username)
+		common.Warn("認証失敗: %s", username, "Service")
 		return "", errors.New("invalid credentials")
 	}
-	serviceLogger.Printf("認証成功: %s", username)
+	common.Info("認証成功: %s", username, "Service")
 	// 本来はここでJWTなどを返すが、サンプルなので固定トークン
 	return "dummy-token", nil
 }

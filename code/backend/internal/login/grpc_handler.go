@@ -1,13 +1,10 @@
 package login
 
 import (
+	"backend/internal/common"
 	auth "backend/internal/login/proto/api/proto"
 	"context"
-	"log"
-	"os"
 )
-
-var grpcLogger = log.New(os.Stdout, "[gRPC] ", log.LstdFlags)
 
 type GrpcAuthServiceServer struct {
 	auth.UnimplementedAuthServiceServer
@@ -26,7 +23,7 @@ func (s *GrpcAuthServiceServer) Login(ctx context.Context, req *auth.LoginReques
 
 	token, err := s.service.Authenticate(ctx, req.GetUsername(), req.GetPassword())
 	if err != nil {
-		grpcLogger.Printf("認証失敗: %s", req.GetUsername())
+		common.Warn("認証失敗: %s", req.GetUsername(), "gRPC")
 		return nil, err
 	}
 	// ユーザー情報取得
