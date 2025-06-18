@@ -8,6 +8,8 @@ import (
 	"os"
 )
 
+var restLogger = log.New(os.Stdout, "[REST] ", log.LstdFlags)
+
 type LoginRequest struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
@@ -20,7 +22,7 @@ type LoginResponse struct {
 
 func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
-		log.Printf("[REST] Invalid method: %s", r.Method)
+		restLogger.Printf("Invalid method: %s", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		json.NewEncoder(w).Encode(LoginResponse{Error: "Method not allowed"})
 		return
@@ -28,7 +30,7 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 
 	var req LoginRequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Printf("[REST] JSON decode error: %v", err)
+		restLogger.Printf("JSON decode error: %v", err)
 		w.WriteHeader(http.StatusBadRequest)
 		json.NewEncoder(w).Encode(LoginResponse{Error: "Invalid request"})
 		return
@@ -41,20 +43,20 @@ func LoginHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	db, err := common.GetDB(dbPath)
 	if err != nil {
-		log.Printf("[REST] DB接続エラー: %v", err)
+		restLogger.Printf("DB接続エラー: %v", err)
 		w.WriteHeader(http.StatusInternalServerError)
 		json.NewEncoder(w).Encode(LoginResponse{Error: "DB接続エラー"})
 		return
 	}
 	repo := NewUserRepository(db)
 	service := NewAuthService(repo)
-	token, err := service.Authenticate(req.Username, req.Password)
+	token, err := service.Authenticate(r.Context(), req.Username, req.Password)
 	if err != nil {
-		log.Printf("[REST] 認証失敗: %s", req.Username)
+		restLogger.Printf("認証失敗: %s", req.Username)
 		w.WriteHeader(http.StatusUnauthorized)
 		json.NewEncoder(w).Encode(LoginResponse{Error: "Invalid credentials"})
 		return
 	}
-	log.Printf("[REST] 認証成功: %s", req.Username)
+	restLogger.Printf("認証成功: %s", req.Username)
 	json.NewEncoder(w).Encode(LoginResponse{Token: token})
 }

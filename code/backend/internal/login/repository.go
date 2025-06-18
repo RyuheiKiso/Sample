@@ -1,11 +1,12 @@
 package login
 
 import (
+	"context"
 	"database/sql"
 )
 
 type UserRepository interface {
-	FindByUsername(username string) (*User, error)
+	FindByUsername(ctx context.Context, username string) (*User, error)
 }
 
 type userRepository struct {
@@ -16,8 +17,8 @@ func NewUserRepository(db *sql.DB) UserRepository {
 	return &userRepository{db: db}
 }
 
-func (r *userRepository) FindByUsername(username string) (*User, error) {
-	row := r.db.QueryRow("SELECT id, username, password FROM user WHERE username = ?", username)
+func (r *userRepository) FindByUsername(ctx context.Context, username string) (*User, error) {
+	row := r.db.QueryRowContext(ctx, "SELECT id, username, password FROM user WHERE username = ?", username)
 	var u User
 	err := row.Scan(&u.ID, &u.Username, &u.Password)
 	if err == sql.ErrNoRows {

@@ -20,3 +20,11 @@ func GetDB(dataSourceName string) (*sql.DB, error) {
 	})
 	return db, err
 }
+
+// DBコネクションをクローズ
+func CloseDB() error {
+	if db != nil {
+		return db.Close()
+	}
+	return nil
+}
