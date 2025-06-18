@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	login "backend/internal/login"
-	auth "backend/internal/login/proto/api/proto"
+	"backend/router"
 
 	"github.com/improbable-eng/grpc-web/go/grpcweb"
 	"google.golang.org/grpc"
@@ -32,7 +32,7 @@ func main() {
 	// gRPCサーバー
 	log.Println("Setting up gRPC server")
 	grpcServer := grpc.NewServer()
-	auth.RegisterAuthServiceServer(grpcServer, login.NewGrpcAuthServiceServer())
+	router.InitAndRegisterGrpcServices(grpcServer)
 
 	// gRPC-Webラッパー
 	grpcWebServer := grpcweb.WrapServer(grpcServer,
