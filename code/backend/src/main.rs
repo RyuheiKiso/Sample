@@ -29,8 +29,3 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("[MAIN] サーバー終了");
     Ok(())
 }
-        .serve("0.0.0.0:50051".parse()?)
-        .await?;
-    println!("[MAIN] サーバー終了");
-    Ok(())
-}

@@ -1,6 +1,4 @@
 use anyhow::Result;
-use std::sync::{Arc, Mutex};
-use rusqlite::Connection;
 use crate::common::db::{get_connection, find_user_by_username};
 
 #[derive(Debug, Clone)]
@@ -71,7 +69,5 @@ mod tests {
     fn test_find_by_username_not_found() {
         let repo = DummyRepo;
         assert!(repo.find_by_username("bob").unwrap().is_none());
-    }
-}
     }
 }
