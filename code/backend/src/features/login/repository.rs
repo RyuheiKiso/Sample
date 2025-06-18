@@ -1,6 +1,7 @@
 use anyhow::Result;
 use std::sync::{Arc, Mutex};
 use rusqlite::Connection;
+use crate::common::db::get_connection;
 
 #[derive(Debug, Clone)]
 pub struct UserRecord {
@@ -16,17 +17,19 @@ pub trait UserRepository: Send + Sync + 'static {
 
 #[derive(Clone)]
 pub struct SqliteUserRepository {
-    pub conn: Arc<Mutex<Connection>>,
+    pub db_path: String,
 }
 
 impl UserRepository for SqliteUserRepository {
     fn find_by_username(&self, username: &str) -> Result<Option<UserRecord>> {
-        let conn = self.conn.lock().unwrap();
+        println!("[REPO] find_by_username: username={}", username);
+        let conn = get_connection(&self.db_path)?;
         let mut stmt = conn.prepare(
             "SELECT id, username, password, display_name FROM user WHERE username = ?1"
         )?;
         let mut rows = stmt.query([username])?;
         if let Some(row) = rows.next()? {
+            println!("[REPO] ユーザー取得成功: username={}", username);
             Ok(Some(UserRecord {
                 id: row.get(0)?,
                 username: row.get(1)?,
@@ -34,6 +37,7 @@ impl UserRepository for SqliteUserRepository {
                 display_name: row.get(3)?,
             }))
         } else {
+            println!("[REPO] ユーザー取得失敗: username={}", username);
             Ok(None)
         }
     }

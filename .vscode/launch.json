@@ -1,0 +1,31 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Frontend: React App",
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000",
+      "webRoot": "${workspaceFolder}/code/frontend/src",
+      "preLaunchTask": "npm: start"
+    },
+    {
+      "name": "Backend: Rust (Debug)",
+      "type": "lldb",
+      "request": "launch",
+      "program": "${workspaceFolder}/code/backend/target/debug/backend",
+      "args": [],
+      "cwd": "${workspaceFolder}/code/backend",
+      "sourceLanguages": ["rust"]
+    }
+  ],
+  "compounds": [
+    {
+      "name": "Start F & B",
+      "configurations": [
+        "Frontend: React App",
+        "Backend: Rust (Debug)"
+      ]
+    }
+  ]
+}

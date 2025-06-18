@@ -11,14 +11,19 @@ impl<R: UserRepository> LoginService<R> {
     }
 
     pub fn authenticate(&self, username: &str, password: &str) -> Result<UserRecord> {
+        println!("[SERVICE] authenticate: username={}", username);
         let user = self.repo.find_by_username(username)?;
         if let Some(user) = user {
+            println!("[SERVICE] ユーザー発見: username={}", user.username);
             if user.password == password {
+                println!("[SERVICE] パスワード一致: username={}", user.username);
                 Ok(user)
             } else {
+                println!("[SERVICE] パスワード不一致: username={}", user.username);
                 Err(anyhow!("Invalid password"))
             }
         } else {
+            println!("[SERVICE] ユーザー未発見: username={}", username);
             Err(anyhow!("User not found"))
         }
     }

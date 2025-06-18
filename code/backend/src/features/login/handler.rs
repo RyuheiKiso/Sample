@@ -2,19 +2,18 @@ use tonic::{Request, Response, Status};
 use crate::features::login::proto::auth::auth_service_server::AuthService;
 use crate::features::login::proto::auth::{LoginRequest, LoginResponse, User};
 use crate::features::login::service::LoginService;
-use crate::features::login::repository::SqliteUserRepository;
+use crate::features::login::repository::{SqliteUserRepository, UserRepository};
+use crate::common::db::get_connection;
 use rusqlite::Connection;
 use std::sync::{Arc, Mutex};
 
 pub struct AuthServiceImpl {
-    pub service: LoginService<SqliteUserRepository>,
+    pub db_path: String,
 }
 
 impl AuthServiceImpl {
-    pub fn new(conn: Arc<Mutex<Connection>>) -> Self {
-        let repo = SqliteUserRepository { conn };
-        let service = LoginService::new(repo);
-        Self { service }
+    pub fn new(db_path: &str) -> Self {
+        Self { db_path: db_path.to_string() }
     }
 }
 
@@ -25,8 +24,30 @@ impl AuthService for AuthServiceImpl {
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
         let req = request.into_inner();
-        let user = self.service.authenticate(&req.username, &req.password)
-            .map_err(|_| Status::unauthenticated("Invalid username or password"))?;
+        println!("[LOGIN] リクエスト受信: username={}, password={}", req.username, req.password);
+
+        // 必要なときにDB接続
+        let conn = match get_connection(&self.db_path) {
+            Ok(conn) => conn,
+            Err(e) => {
+                println!("[LOGIN] DB接続失敗: {}", e);
+                return Err(Status::internal("DB connection failed"));
+            }
+        };
+        let repo = SqliteUserRepository { conn: std::sync::Arc::new(std::sync::Mutex::new(conn)) };
+        let service = LoginService::new(repo);
+
+        let user = match service.authenticate(&req.username, &req.password) {
+            Ok(user) => {
+                println!("[LOGIN] 認証成功: username={}", user.username);
+                user
+            }
+            Err(e) => {
+                println!("[LOGIN] 認証失敗: username={}, error={}", req.username, e);
+                return Err(Status::unauthenticated("Invalid username or password"));
+            }
+        };
+
         let resp = LoginResponse {
             token: "dummy_token".to_string(),
             user: Some(User {
@@ -35,6 +56,8 @@ impl AuthService for AuthServiceImpl {
                 display_name: user.display_name,
             }),
         };
+        println!("[LOGIN] レスポンス送信: token={}, user={:?}", resp.token, resp.user);
+
         Ok(Response::new(resp))
     }
 }
@@ -42,7 +65,7 @@ impl AuthService for AuthServiceImpl {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::features::login::repository::UserRecord;
+    use crate::features::login::repository::{UserRecord, UserRepository};
 
     struct MockRepo;
     impl UserRepository for MockRepo {
