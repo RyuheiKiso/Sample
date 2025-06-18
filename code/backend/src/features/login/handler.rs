@@ -62,32 +62,93 @@ impl AuthService for AuthServiceImpl {
 
 #[cfg(test)]
 mod tests {
-    // use super::*;
+    use super::*;
+    use crate::features::login::proto::auth::{LoginRequest};
+    use crate::features::login::service::LoginService;
     use crate::features::login::repository::{UserRecord, UserRepository};
+    use crate::common::db::select;
+    use tonic::{Request, Response, Status};
+    use rusqlite::Connection;
+    use std::sync::{Arc, Mutex};
 
-    #[allow(dead_code)]
-    struct MockRepo;
-    impl UserRepository for MockRepo {
+    // テスト用リポジトリ（コネクションを直接持つ）
+    #[derive(Clone)]
+    struct TestUserRepository {
+        conn: Arc<Mutex<Connection>>,
+    }
+    impl UserRepository for TestUserRepository {
         fn find_by_username(&self, username: &str) -> anyhow::Result<Option<UserRecord>> {
-            if username == "alice" {
-                Ok(Some(UserRecord {
-                    id: 1,
-                    username: "alice".to_string(),
-                    password: "alicepw".to_string(),
-                    display_name: "Alice".to_string(),
-                }))
+            let conn = self.conn.lock().unwrap();
+            let query = "SELECT id, username, password, display_name FROM user WHERE username = ?1";
+            let results = select(
+                &conn,
+                query,
+                &[&username],
+                |row| Ok(UserRecord {
+                    id: row.get(0)?,
+                    username: row.get(1)?,
+                    password: row.get(2)?,
+                    display_name: row.get(3)?,
+                }),
+            )?;
+            if let Some(user) = results.get(0) {
+                Ok(Some(user.clone()))
             } else {
                 Ok(None)
             }
         }
     }
 
-    // AuthServiceImplのloginはDBアクセスを伴うため、CIやローカルでテーブルがないと失敗します。
-    // ここではテストをコメントアウトしておきます。
-    /*
+    // テスト用ハンドラ
+    struct TestAuthServiceImpl {
+        service: LoginService<TestUserRepository>,
+    }
+    #[tonic::async_trait]
+    impl AuthService for TestAuthServiceImpl {
+        async fn login(
+            &self,
+            request: Request<LoginRequest>,
+        ) -> Result<Response<LoginResponse>, Status> {
+            let req = request.into_inner();
+            let user = match self.service.authenticate(&req.username, &req.password) {
+                Ok(user) => user,
+                Err(_) => return Err(Status::unauthenticated("Invalid username or password")),
+            };
+            let resp = LoginResponse {
+                token: "dummy_token".to_string(),
+                user: Some(User {
+                    id: user.id,
+                    username: user.username,
+                    display_name: user.display_name,
+                }),
+            };
+            Ok(Response::new(resp))
+        }
+    }
+
+    fn setup_test_repo() -> TestUserRepository {
+        let conn = Connection::open_in_memory().unwrap();
+        conn.execute(
+            "CREATE TABLE user (
+                id INTEGER PRIMARY KEY,
+                username TEXT NOT NULL,
+                password TEXT NOT NULL,
+                display_name TEXT NOT NULL
+            )",
+            [],
+        ).unwrap();
+        conn.execute(
+            "INSERT INTO user (username, password, display_name) VALUES (?1, ?2, ?3)",
+            ["alice", "alicepw", "Alice"],
+        ).unwrap();
+        TestUserRepository { conn: Arc::new(Mutex::new(conn)) }
+    }
+
     #[tokio::test]
     async fn test_login_success() {
-        let handler = AuthServiceImpl { db_path: "dummy.db".to_string() };
+        let repo = setup_test_repo();
+        let service = LoginService::new(repo);
+        let handler = TestAuthServiceImpl { service };
         let req = Request::new(LoginRequest {
             username: "alice".to_string(),
             password: "alicepw".to_string(),
@@ -98,7 +159,9 @@ mod tests {
 
     #[tokio::test]
     async fn test_login_fail() {
-        let handler = AuthServiceImpl { db_path: "dummy.db".to_string() };
+        let repo = setup_test_repo();
+        let service = LoginService::new(repo);
+        let handler = TestAuthServiceImpl { service };
         let req = Request::new(LoginRequest {
             username: "alice".to_string(),
             password: "wrongpw".to_string(),
@@ -106,5 +169,4 @@ mod tests {
         let result = handler.login(req).await;
         assert!(result.is_err());
     }
-    */
 }
