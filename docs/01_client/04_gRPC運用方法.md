@@ -36,15 +36,25 @@ npm install --save-dev ts-proto protoc
 
 ## protoファイルの管理・型生成
 
-- protoファイルは`features/<機能>/proto/`ディレクトリに配置
+- protoファイルはプロジェクトルートの`proto/`ディレクトリに配置
 - `protobuf-ts`や`ts-proto`等でTypeScript型を自動生成
-- 生成物は`proto/`配下にコミットし、型安全なgRPC通信を実現
+- 生成物は`src/features/<機能>/proto/`配下に配置し、型安全なgRPC通信を実現
 
 ### 型生成コマンド例（protobuf-ts）
 
 ```sh
-npx protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
+npx protoc \
+  --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts \
   --ts_out=src/features/login/proto \
+  --proto_path=proto proto/auth.proto
+```
+
+### 型生成コマンド例（ts-proto）
+
+```sh
+npx protoc \
+  --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts_proto \
+  --ts_proto_out=src/features/login/proto \
   --proto_path=proto proto/auth.proto
 ```
 
@@ -90,7 +100,7 @@ export async function login(username: string, password: string) {
 
 ## 運用上の注意
 
-- protoファイルのバージョン管理を徹底
+- protoファイルはプロジェクトルートの`proto/`ディレクトリで一元管理
 - サーバー・クライアントで型生成タイミングを揃える
 - 生成物の差分レビューを行う
 
@@ -99,7 +109,7 @@ export async function login(username: string, password: string) {
 ## protoファイルの共通管理
 
 - バックエンド（Rust）とフロントエンド（React）で**同じprotoファイルを共通利用**することで、API仕様のズレや型の不整合を防げます。
-- プロジェクトルート等に`proto/`ディレクトリを作成し、両者から参照できるようにします。
+- プロジェクトルートに`proto/`ディレクトリを作成し、両者から参照できるようにします。
 - サーバー側は`tonic-build`、クライアント側は`protobuf-ts`や`ts-proto`等で**同じprotoから型やコードを自動生成**します。
 - protoファイル自体は**gitで厳密にバージョン管理**し、生成物はgit管理対象外とする運用が推奨されます。
 
