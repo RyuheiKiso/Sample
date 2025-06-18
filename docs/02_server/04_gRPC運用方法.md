@@ -1,35 +1,22 @@
-# gRPC運用方法（Rustサーバー）
+# gRPC運用方法（Goサーバー）
 
 ---
 
 ## 概要
 
-RustサーバーでgRPCサービスを運用する際の設計・運用方針をまとめます。  
-主に[tonic](https://github.com/hyperium/tonic)クレートを利用します。
+GoサーバーでgRPCサービスを運用する際の設計・運用方針をまとめます。  
+主に[google.golang.org/grpc](https://pkg.go.dev/google.golang.org/grpc)パッケージを利用します。
 
 ---
 
 ## インストール方法
 
-Cargo.tomlに以下を追加し、必要なクレートをインストールします。
+`go.mod`に以下を追加し、必要なパッケージをインストールします。
 
-```toml
-[dependencies]
-tonic = "0.10"
-prost = "0.12"
-tokio = { version = "1", features = ["full"] }
-```
-
-- コマンド例:
-  ```sh
-  cargo add tonic prost tokio --features tokio/full
-  ```
-
-- gRPCコード生成用に`tonic-build`も追加します（build.rsで利用）。
-
-```toml
-[build-dependencies]
-tonic-build = "0.10"
+```sh
+go get google.golang.org/grpc
+go get google.golang.org/protobuf/cmd/protoc-gen-go
+go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 ```
 
 ---
@@ -37,18 +24,12 @@ tonic-build = "0.10"
 ## protoファイルの管理・ビルド
 
 - `proto/`ディレクトリにgRPCサービス定義（.protoファイル）を配置
-- `build.rs`で`tonic-build`を利用し、Rustコードを自動生成
+- `protoc`コマンドでGoコードを自動生成
 
-### build.rs例
+### 生成コマンド例
 
-```rust
-// filepath: backend/build.rs
-fn main() {
-    tonic_build::configure()
-        .out_dir("src/features/login/proto") // 生成先
-        .compile(&["proto/auth.proto"], &["proto"])
-        .unwrap();
-}
+```sh
+protoc --go_out=internal/login/proto --go-grpc_out=internal/login/proto -I proto proto/auth.proto
 ```
 
 ---
@@ -57,33 +38,31 @@ fn main() {
 
 - **サーバー・クライアント間で同じprotoファイルを共通利用**することで、API仕様の一貫性・型安全性を担保できます。
 - プロジェクトルート等に`proto/`ディレクトリを作成し、両者から参照できるようにします。
-- サーバー側は`tonic-build`、クライアント側は`protobuf-ts`や`ts-proto`等で**同じprotoから型やコードを自動生成**します。
+- サーバー側・クライアント側ともに`protoc`で**同じprotoから型やコードを自動生成**します。
 - protoファイル自体は**gitで厳密にバージョン管理**し、生成物はgit管理対象外とする運用が推奨されます。
 
 ---
 
 ## サーバー実装例
 
-```rust
-// filepath: src/features/login/handler.rs
-use tonic::{Request, Response, Status};
-use crate::features::login::proto::auth::{LoginRequest, LoginResponse};
-use crate::features::login::proto::auth_server::{Auth, AuthServer};
+```go
+// filepath: internal/login/handler.go
+package login
 
-#[derive(Default)]
-pub struct AuthService;
+import (
+    context "context"
+    pb "backend/internal/login/proto"
+)
 
-#[tonic::async_trait]
-impl Auth for AuthService {
-    async fn login(
-        &self,
-        request: Request<LoginRequest>,
-    ) -> Result<Response<LoginResponse>, Status> {
-        // ...認証ロジック...
-        Ok(Response::new(LoginResponse {
-            token: "dummy_token".into(),
-        }))
-    }
+type AuthService struct {
+    pb.UnimplementedAuthServer
+}
+
+func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
+    // ...認証ロジック...
+    return &pb.LoginResponse{
+        Token: "dummy_token",
+    }, nil
 }
 ```
 
@@ -91,18 +70,28 @@ impl Auth for AuthService {
 
 ## サーバー起動例
 
-```rust
-// filepath: src/main.rs
-use tonic::transport::Server;
-use crate::features::login::handler::{AuthService, AuthServer};
+```go
+// filepath: cmd/server/main.go
+package main
 
-#[tokio::main]
-async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    Server::builder()
-        .add_service(AuthServer::new(AuthService::default()))
-        .serve("[::1]:50051".parse()?)
-        .await?;
-    Ok(())
+import (
+    "log"
+    "net"
+    "google.golang.org/grpc"
+    "backend/internal/login"
+    pb "backend/internal/login/proto"
+)
+
+func main() {
+    lis, err := net.Listen("tcp", ":50051")
+    if err != nil {
+        log.Fatalf("failed to listen: %v", err)
+    }
+    s := grpc.NewServer()
+    pb.RegisterAuthServer(s, &login.AuthService{})
+    if err := s.Serve(lis); err != nil {
+        log.Fatalf("failed to serve: %v", err)
+    }
 }
 ```
 
@@ -111,6 +100,17 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 ## 運用上の注意
 
 - protoファイルはサーバー・クライアント間でバージョン管理を徹底
+- 生成コードはgit管理対象外（.gitignore推奨）または生成タイミングを明確化
+- セキュリティ（TLS/認証）設定を適切に行う
+
+---
+
+## 参考
+
+- [gRPC-Go公式ドキュメント](https://grpc.io/docs/languages/go/)
+- [gRPC公式](https://grpc.io/docs/)
+
+---
 - 生成コードはgit管理対象外（.gitignore推奨）または生成タイミングを明確化
 - セキュリティ（TLS/認証）設定を適切に行う
 
