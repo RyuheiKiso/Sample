@@ -1,11 +1,7 @@
 import Backdrop from '@mui/material/Backdrop';
 import CircularProgress from '@mui/material/CircularProgress';
 import React from 'react';
-
-export type LoadingBackdropProps = {
-  open: boolean;
-  message?: string;
-};
+import type { LoadingBackdropProps } from '../types/loading';
 
 const LoadingBackdrop: React.FC<LoadingBackdropProps> = ({ open, message }) => (
   <Backdrop sx={{ color: '#fff', zIndex: (theme) => theme.zIndex.drawer + 1 }} open={open}>

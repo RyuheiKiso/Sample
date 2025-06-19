@@ -1,12 +1,7 @@
+
 import React, { useEffect, useRef, useId } from 'react';
 import { Html5Qrcode } from 'html5-qrcode';
-
-type QrReaderProps = {
-  onScan: (result: string) => void;
-  onError?: (error: string) => void;
-  width?: number;
-  height?: number;
-};
+import type { QrReaderProps } from '../types/qr-reader';
 
 const QrReader: React.FC<QrReaderProps> = ({ onScan, onError, width = 300, height = 300 }) => {
   const qrRef = useRef<HTMLDivElement>(null);

@@ -1,9 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-
-interface LoadingContextType {
-  loading: boolean;
-  setLoading: (value: boolean) => void;
-}
+import type { LoadingContextType } from '../types/loading-context';
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined);
 

@@ -1,21 +1,10 @@
 
+
 import { Box, Button, TextField, Paper, Alert, Snackbar } from "@mui/material";
 import React, { useState, useImperativeHandle, forwardRef, useEffect } from "react";
-
 import { useLoading } from '../../../shared/components/LoadingContext';
 import { login } from "../api/loginApi";
-
-
-
-/**
- * LoginFormコンポーネントの外部操作用ハンドル
- */
-export type LoginFormHandle = {
-  /**
-   * フォームのsubmitを外部から実行
-   */
-  submit: () => void;
-};
+import type { LoginFormHandle } from './login-form.types';
 
 /**
  * ログインフォームコンポーネント

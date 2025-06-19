@@ -1,19 +1,7 @@
 
 import React, { useRef, useEffect, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
-
-// 型定義
-export type BarcodeReaderResult = {
-  text: string;
-  format: string;
-};
-
-export type BarcodeReaderProps = {
-  onDetected: (result: BarcodeReaderResult) => void;
-  width?: number;
-  height?: number;
-  facingMode?: 'user' | 'environment';
-};
+import type { BarcodeReaderResult, BarcodeReaderProps } from '../types/barcode-reader';
 
 /**
  * BarcodeReader
