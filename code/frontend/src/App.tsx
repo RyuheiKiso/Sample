@@ -3,20 +3,26 @@
 // アプリケーションのエントリーポイント
 import React from 'react';
 
+
 import './App.css';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Login from './features/login';
+import Sandbox from './features/sandbox/Sandbox';
+
 
 
 /**
  * アプリケーションのメインコンポーネント
- * 現状はログイン画面のみ表示
+ * ルーティング対応
  */
 function App() {
   return (
-    <div className="App">
-      {/* ログイン画面のみ表示 */}
-      <Login />
-    </div>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/sandbox" element={<Sandbox />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
