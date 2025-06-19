@@ -15,24 +15,30 @@ const QrReader: React.FC<QrReaderProps> = ({ onScan, onError, width = 300, heigh
 
   useEffect(() => {
     if (!qrRef.current) return;
+
     const id = `qr-reader-${uniqueId}`;
     qrRef.current.id = id;
+
     const qrCode = new Html5Qrcode(id);
     html5QrCodeRef.current = qrCode;
+
+    const handleSuccess = (decodedText: string) => {
+      onScan(decodedText);
+    };
+
+    const handleFailure = (err: string) => {
+      if (onError) onError(err);
+    };
+
     qrCode
       .start(
         { facingMode: 'environment' },
         { fps: 10, qrbox: { width, height } },
-        (decodedText) => {
-          onScan(decodedText);
-        },
-        (err) => {
-          if (onError) onError(err);
-        }
+        handleSuccess,
+        handleFailure
       )
-      .catch((err) => {
-        if (onError) onError(err);
-      });
+      .catch(handleFailure);
+
     return () => {
       qrCode
         .stop()
@@ -43,7 +49,18 @@ const QrReader: React.FC<QrReaderProps> = ({ onScan, onError, width = 300, heigh
     };
   }, [onScan, onError, width, height, uniqueId]);
 
-  return <div ref={qrRef} style={{ width, height }} />;
+  return (
+    <div
+      ref={qrRef}
+      style={{
+        width,
+        height,
+        position: 'relative',
+        overflow: 'hidden',
+        background: '#000', // カメラ起動前の背景色
+      }}
+    />
+  );
 };
 
 export default QrReader;

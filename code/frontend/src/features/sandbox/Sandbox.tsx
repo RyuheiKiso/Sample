@@ -1,13 +1,26 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 // サンドボックス用に共通コンポーネントをimport
 
 import Header from '../../shared/components/Header';
 import Footer from '../../shared/components/Footer';
 
+
 import QrReader from '../../shared/components/QrReader';
 import { useQrReader } from '../../shared/hooks/useQrReader';
+import BarcodeReader, { BarcodeReaderResult } from '../../shared/components/BarcodeReader';
 
+import Select from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
+import InputLabel from '@mui/material/InputLabel';
+import FormControl from '@mui/material/FormControl';
+
+const componentOptions = [
+  { label: 'Header', value: 'Header' },
+  { label: 'Footer', value: 'Footer' },
+  { label: 'QrReader', value: 'QrReader' },
+  { label: 'BarcodeReader', value: 'BarcodeReader' },
+];
 
 const Sandbox: React.FC = () => {
   // QrReaderのスキャン結果・エラー管理
@@ -20,25 +33,61 @@ const Sandbox: React.FC = () => {
     F2: () => alert('F2が押されました'),
   };
 
+
+  // BarcodeReaderの検出結果
+  const [barcodeResult, setBarcodeResult] = useState<BarcodeReaderResult | null>(null);
+  // ドロップダウンで選択されたコンポーネント名
+  const [selectedComponent, setSelectedComponent] = useState('Header');
+
   return (
     <div style={{ padding: 24 }}>
       <h1>Sandbox Page</h1>
-      <section style={{ marginBottom: 24 }}>
-        <h2>Header</h2>
-        <Header title="サンドボックス" />
-      </section>
-      <section style={{ marginBottom: 24 }}>
-        <h2>Footer</h2>
-        <Footer buttonNames={buttonNames} onFKeyPress={onFKeyPress} />
-      </section>
-      <section style={{ marginBottom: 24 }}>
-        <h2>QrReader</h2>
-        <QrReader onScan={handleScan} onError={handleError} width={300} height={300} />
-        <div style={{ marginTop: 8 }}>スキャン結果: {qrResult ?? ''}</div>
-        {qrError && (
-          <div style={{ color: 'red', marginTop: 8 }}>エラー: {qrError}</div>
-        )}
-      </section>
+      <div style={{ marginBottom: 24 }}>
+        <FormControl variant="outlined" size="small" style={{ minWidth: 200 }}>
+          <InputLabel id="component-select-label">表示コンポーネント</InputLabel>
+          <Select
+            labelId="component-select-label"
+            value={selectedComponent}
+            label="表示コンポーネント"
+            onChange={e => setSelectedComponent(e.target.value as string)}
+          >
+            {componentOptions.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>{opt.label}</MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </div>
+      {selectedComponent === 'Header' && (
+        <section style={{ marginBottom: 24 }}>
+          <h2>Header</h2>
+          <Header title="サンドボックス" />
+        </section>
+      )}
+      {selectedComponent === 'Footer' && (
+        <section style={{ marginBottom: 24 }}>
+          <h2>Footer</h2>
+          <Footer buttonNames={buttonNames} onFKeyPress={onFKeyPress} />
+        </section>
+      )}
+      {selectedComponent === 'QrReader' && (
+        <section style={{ marginBottom: 24 }}>
+          <h2>QrReader</h2>
+          <QrReader onScan={handleScan} onError={handleError} width={300} height={300} />
+          <div style={{ marginTop: 8 }}>スキャン結果: {qrResult ?? ''}</div>
+          {qrError && (
+            <div style={{ color: 'red', marginTop: 8 }}>エラー: {qrError}</div>
+          )}
+        </section>
+      )}
+      {selectedComponent === 'BarcodeReader' && (
+        <section style={{ marginBottom: 24 }}>
+          <h2>BarcodeReader</h2>
+          <BarcodeReader onDetected={setBarcodeResult} width={300} height={200} />
+          <div style={{ marginTop: 8 }}>
+            検出結果: {barcodeResult ? `${barcodeResult.text} (${barcodeResult.format})` : ''}
+          </div>
+        </section>
+      )}
       {/* 必要に応じて他のshared/componentsもここでテスト可能 */}
     </div>
   );
