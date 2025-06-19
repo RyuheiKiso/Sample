@@ -1,22 +1,23 @@
-# gRPC運用方法（Goサーバー）
+# gRPC運用方法（Rustサーバー）
 
 ---
 
 ## 概要
 
-GoサーバーでgRPCサービスを運用する際の設計・運用方針をまとめます。  
-主に[google.golang.org/grpc](https://pkg.go.dev/google.golang.org/grpc)パッケージを利用します。
+RustサーバーでgRPCサービスを運用する際の設計・運用方針をまとめます。  
+主に[tonic](https://docs.rs/tonic/)クレートを利用します。
 
 ---
 
 ## インストール方法
 
-`go.mod`に以下を追加し、必要なパッケージをインストールします。
+`Cargo.toml`に以下を追加し、必要なクレートをインストールします。
 
-```sh
-go get google.golang.org/grpc
-go get google.golang.org/protobuf/cmd/protoc-gen-go
-go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
+```toml
+[dependencies]
+tonic = "0.10"
+prost = "0.12"
+tokio = { version = "1", features = ["full"] }
 ```
 
 ---
@@ -24,13 +25,17 @@ go get google.golang.org/grpc/cmd/protoc-gen-go-grpc
 ## protoファイルの管理・ビルド
 
 - `proto/`ディレクトリにgRPCサービス定義（.protoファイル）を配置
-- `protoc`コマンドでGoコードを自動生成
+- `tonic-build`でRustコードを自動生成
 
 ### 生成コマンド例
 
 ```sh
-protoc --go_out=internal/login/proto --go-grpc_out=internal/login/proto -I proto proto/auth.proto
+cargo build
+# またはビルド前に明示的に
+cargo run --bin build_proto
 ```
+
+`build.rs`やビルドスクリプトで`tonic-build`を利用して自動生成するのが一般的です。
 
 ---
 
@@ -38,31 +43,33 @@ protoc --go_out=internal/login/proto --go-grpc_out=internal/login/proto -I proto
 
 - **サーバー・クライアント間で同じprotoファイルを共通利用**することで、API仕様の一貫性・型安全性を担保できます。
 - プロジェクトルート等に`proto/`ディレクトリを作成し、両者から参照できるようにします。
-- サーバー側・クライアント側ともに`protoc`で**同じprotoから型やコードを自動生成**します。
+- サーバー側・クライアント側ともに`tonic-build`で**同じprotoから型やコードを自動生成**します。
 - protoファイル自体は**gitで厳密にバージョン管理**し、生成物はgit管理対象外とする運用が推奨されます。
 
 ---
 
 ## サーバー実装例
 
-```go
-// filepath: internal/login/handler.go
-package login
+```rust
+// filepath: src/login/handler.rs
+use tonic::{Request, Response, Status};
+use crate::login::proto::auth::{AuthServer, LoginRequest, LoginResponse};
 
-import (
-    context "context"
-    pb "backend/internal/login/proto"
-)
+#[derive(Default)]
+pub struct AuthService {}
 
-type AuthService struct {
-    pb.UnimplementedAuthServer
-}
-
-func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.LoginResponse, error) {
-    // ...認証ロジック...
-    return &pb.LoginResponse{
-        Token: "dummy_token",
-    }, nil
+#[tonic::async_trait]
+impl AuthServer for AuthService {
+    async fn login(
+        &self,
+        _request: Request<LoginRequest>,
+    ) -> Result<Response<LoginResponse>, Status> {
+        // ...認証ロジック...
+        let reply = LoginResponse {
+            token: "dummy_token".to_string(),
+        };
+        Ok(Response::new(reply))
+    }
 }
 ```
 
@@ -70,28 +77,23 @@ func (s *AuthService) Login(ctx context.Context, req *pb.LoginRequest) (*pb.Logi
 
 ## サーバー起動例
 
-```go
-// filepath: cmd/server/main.go
-package main
+```rust
+// filepath: src/main.rs
+use tonic::transport::Server;
+use login::proto::auth::auth_server::AuthServer;
+use login::handler::AuthService;
 
-import (
-    "log"
-    "net"
-    "google.golang.org/grpc"
-    "backend/internal/login"
-    pb "backend/internal/login/proto"
-)
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let addr = "[::1]:50051".parse()?;
+    let auth_service = AuthService::default();
 
-func main() {
-    lis, err := net.Listen("tcp", ":50051")
-    if err != nil {
-        log.Fatalf("failed to listen: %v", err)
-    }
-    s := grpc.NewServer()
-    pb.RegisterAuthServer(s, &login.AuthService{})
-    if err := s.Serve(lis); err != nil {
-        log.Fatalf("failed to serve: %v", err)
-    }
+    Server::builder()
+        .add_service(AuthServer::new(auth_service))
+        .serve(addr)
+        .await?;
+
+    Ok(())
 }
 ```
 
@@ -100,17 +102,6 @@ func main() {
 ## 運用上の注意
 
 - protoファイルはサーバー・クライアント間でバージョン管理を徹底
-- 生成コードはgit管理対象外（.gitignore推奨）または生成タイミングを明確化
-- セキュリティ（TLS/認証）設定を適切に行う
-
----
-
-## 参考
-
-- [gRPC-Go公式ドキュメント](https://grpc.io/docs/languages/go/)
-- [gRPC公式](https://grpc.io/docs/)
-
----
 - 生成コードはgit管理対象外（.gitignore推奨）または生成タイミングを明確化
 - セキュリティ（TLS/認証）設定を適切に行う
 

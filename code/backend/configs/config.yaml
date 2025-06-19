@@ -1,5 +1,0 @@
-# サンプル設定ファイル
-server:
-  port: 8080
-db:
-  path: ../data/app.db
