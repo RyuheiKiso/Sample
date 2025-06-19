@@ -1,5 +1,6 @@
 
 import React, { useState, useImperativeHandle, forwardRef } from "react";
+import { useLoading } from '../../../shared/components/LoadingContext';
 import { login } from "../api/loginApi";
 import { Box, Button, TextField, Typography, Paper, Alert } from "@mui/material";
 
@@ -14,10 +15,12 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
   const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { setLoading } = useLoading();
 
   const handleSubmit = React.useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError(null);
+    setLoading(true);
     try {
       const resp = await login(username, password);
       setToken(resp.token);
@@ -45,8 +48,10 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
         message = "サーバーに接続できません。ネットワーク環境やサーバーの状態をご確認ください。";
       }
       setError(message);
+    } finally {
+      setLoading(false);
     }
-  }, [username, password]);
+  }, [username, password, setLoading]);
 
   useImperativeHandle(ref, () => ({
     submit: () => handleSubmit(),

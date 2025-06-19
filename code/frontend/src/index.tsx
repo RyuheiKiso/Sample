@@ -2,14 +2,27 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
 import App from './App';
+import { LoadingProvider } from './shared/components/LoadingContext';
+import LoadingBackdrop from './shared/components/LoadingBackdrop';
+import { useLoading } from './shared/components/LoadingContext';
 import reportWebVitals from './reportWebVitals';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+function AppWithLoading() {
+  const { loading } = useLoading();
+  return <>
+    <App />
+    <LoadingBackdrop open={loading} message="通信中..." />
+  </>;
+}
+
 root.render(
   <React.StrictMode>
-    <App />
+    <LoadingProvider>
+      <AppWithLoading />
+    </LoadingProvider>
   </React.StrictMode>
 );
 
