@@ -1,6 +1,7 @@
 
 use sqlx::SqlitePool;
 use anyhow::Result;
+use log::{debug};
 
 #[derive(Debug, Clone, sqlx::FromRow)]
 pub struct User {
@@ -16,12 +17,18 @@ pub struct UserRepository<'a> {
 
 impl<'a> UserRepository<'a> {
     pub async fn find_by_username(&self, username: &str) -> Result<Option<User>> {
+        debug!("UserRepository: ユーザー名='{}' で検索", username);
         let rec = sqlx::query_as::<_, User>(
             r#"SELECT id, username, password, display_name FROM user WHERE username = ?"#
         )
         .bind(username)
         .fetch_optional(self.pool)
         .await?;
+        if rec.is_some() {
+            debug!("UserRepository: ユーザー '{}' 見つかりました", username);
+        } else {
+            debug!("UserRepository: ユーザー '{}' 見つかりません", username);
+        }
         Ok(rec)
     }
 }

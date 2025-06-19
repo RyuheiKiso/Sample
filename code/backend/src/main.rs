@@ -1,7 +1,7 @@
-use axum::{Router, routing::any};
+use axum::Router;
 use tower_http::cors::{CorsLayer, Any};
 use tower::Layer;
-
+use log::info;
 use tonic_web::GrpcWebLayer;
 use sqlx::sqlite::SqlitePool;
 use dotenvy;
@@ -13,6 +13,7 @@ use crate::feature::login::login::grpc_handler::GrpcLoginHandler;
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
+    env_logger::init();
     let addr = "0.0.0.0:50051";
     let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://src/data/app.db".to_string());
     let db = SqlitePool::connect(&db_url).await?;
@@ -21,7 +22,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pool: db.clone(),
         jwt_secret: jwt_secret.clone(),
     };
-    println!("gRPC server listening on {} (with gRPC-Web)", addr);
+    info!("gRPC server listening on {} (with gRPC-Web)", addr);
     let grpc = GrpcWebLayer::new().layer(AuthServiceServer::new(auth_service));
     let cors = CorsLayer::new()
         .allow_origin(Any)
