@@ -16,9 +16,18 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     dotenvy::dotenv().ok();
     common::logger::init_logger();
     let addr = "0.0.0.0:50051";
-    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| "sqlite://src/data/app.db".to_string());
-    let db = SqlitePool::connect(&db_url).await?;
-    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| "secretkey".to_string());
+    let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
+        log::warn!("DATABASE_URLが設定されていません。デフォルトを使用します");
+        "sqlite://src/data/app.db".to_string()
+    });
+    let db = SqlitePool::connect(&db_url).await.map_err(|e| {
+        log::error!("DB接続失敗: {}", e);
+        e
+    })?;
+    let jwt_secret = std::env::var("JWT_SECRET").unwrap_or_else(|_| {
+        log::warn!("JWT_SECRETが設定されていません。デフォルトを使用します");
+        "secretkey".to_string()
+    });
     let auth_service = GrpcLoginHandler {
         pool: db.clone(),
         jwt_secret: jwt_secret.clone(),
@@ -35,7 +44,13 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .layer(cors);
 
     use axum::serve;
-    let listener = tokio::net::TcpListener::bind(addr).await?;
-    serve(listener, app).await?;
+    let listener = tokio::net::TcpListener::bind(addr).await.map_err(|e| {
+        log::error!("サーバーリッスン失敗: {}", e);
+        e
+    })?;
+    serve(listener, app).await.map_err(|e| {
+        log::error!("サーバー起動失敗: {}", e);
+        e
+    })?;
     Ok(())
 }

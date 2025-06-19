@@ -10,7 +10,8 @@ pub fn init_logger() {
     if !log_dir.exists() {
         std::fs::create_dir_all(log_dir).expect("Failed to create log directory");
     }
-    Logger::try_with_str("info")
+    let log_level = std::env::var("LOG_LEVEL").unwrap_or_else(|_| "info".to_string());
+    Logger::try_with_str(&log_level)
         .unwrap()
         .log_to_file(FileSpec::default().directory(log_dir))
         .duplicate_to_stdout(Duplicate::All)

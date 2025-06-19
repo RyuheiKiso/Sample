@@ -3,13 +3,14 @@ import React, { useState } from "react";
 import { login } from "../api/loginApi";
 import { Box, Button, TextField, Typography, Paper, Alert } from "@mui/material";
 
+
 const LoginForm: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     try {
@@ -18,7 +19,7 @@ const LoginForm: React.FC = () => {
     } catch (err: any) {
       setError("ログイン失敗");
     }
-  };
+  }, [username, password]);
 
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
