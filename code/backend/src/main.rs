@@ -1,10 +1,12 @@
+use tower::Layer;
 
 use tonic::transport::Server;
+use tonic_web::GrpcWebLayer;
 use sqlx::sqlite::SqlitePool;
 use dotenvy;
 mod core;
 mod feature;
-use crate::core::generated::generated::auth::auth_service_server::AuthServiceServer;
+use crate::core::generated::auth::auth_service_server::AuthServiceServer;
 use crate::feature::login::login::grpc_handler::GrpcLoginHandler;
 
 #[tokio::main]
@@ -18,9 +20,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         pool: db,
         jwt_secret,
     };
-    println!("gRPC server listening on {}", addr);
+    println!("gRPC server listening on {} (with gRPC-Web)", addr);
+    let grpc = GrpcWebLayer::new().layer(AuthServiceServer::new(auth_service));
     Server::builder()
-        .add_service(AuthServiceServer::new(auth_service))
+        .accept_http1(true)
+        .add_service(grpc)
         .serve(addr)
         .await?;
     Ok(())

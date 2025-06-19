@@ -1,7 +1,7 @@
 
 use tonic::{Request, Response, Status};
-use crate::core::generated::generated::auth::{LoginRequest, LoginResponse, User as ProtoUser};
-use crate::core::generated::generated::auth::auth_service_server::AuthService;
+use crate::core::generated::auth::{LoginRequest, LoginResponse, User as ProtoUser};
+use crate::core::generated::auth::auth_service_server::AuthService;
 use crate::feature::login::login::service::LoginService;
 use sqlx::SqlitePool;
 

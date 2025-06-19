@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-tonic = { version = "0.11", features = ["transport"] }
+tonic = { version = "0.13", features = ["transport"] }
 tokio = { version = "1", features = ["full"] }
 jwt = "0.16"
 hmac = "0.12"
@@ -12,11 +12,14 @@ sha2 = "0.10"
 sqlx = { version = "0.7", features = ["sqlite", "runtime-tokio-native-tls"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-prost = "0.12"
-prost-types = "0.12"
+prost = "0.13"
+prost-types = "0.13"
 chrono = { version = "0.4", features = ["serde"] }
 dotenvy = "0.15"
 anyhow = "1"
+tonic-web = "0.13"
+tower-http = { version = "0.5", features = ["cors"] }
+tower = "0.4"
 
 [build-dependencies]
-tonic-build = "0.11"
+tonic-build = "0.13"
