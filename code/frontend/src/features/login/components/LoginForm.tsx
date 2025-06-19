@@ -22,7 +22,29 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
       const resp = await login(username, password);
       setToken(resp.token);
     } catch (err: any) {
-      setError("ログイン失敗");
+      // gRPCエラーの内容で分岐
+      let message = "予期しないエラーが発生しました。";
+      const isNetworkError = (msg: string) =>
+        msg.includes("Failed to fetch") || msg.includes("Load failed");
+      if (err && typeof err === "object") {
+        // gRPCのunauthenticated
+        if (err.code === 16 || (err.message && err.message.includes("認証失敗"))) {
+          message = "ユーザー名またはパスワードが正しくありません。再度ご確認のうえ、もう一度お試しください。";
+        } else if (err.code === 14) {
+          message = "ネットワークに接続できません。通信環境をご確認ください。";
+        } else if (err.code && err.code >= 10 && err.code < 20) {
+          message = "サーバーで問題が発生しました。しばらくしてから再度お試しください。";
+        } else if (err.message) {
+          if (typeof err.message === "string" && isNetworkError(err.message)) {
+            message = "サーバーに接続できません。ネットワーク環境やサーバーの状態をご確認ください。";
+          } else {
+            message = err.message;
+          }
+        }
+      } else if (typeof err === "string" && isNetworkError(err)) {
+        message = "サーバーに接続できません。ネットワーク環境やサーバーの状態をご確認ください。";
+      }
+      setError(message);
     }
   }, [username, password]);
 
