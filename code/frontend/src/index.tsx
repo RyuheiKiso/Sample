@@ -1,11 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+
 import './index.css';
 import App from './App';
-import { LoadingProvider } from './shared/components/LoadingContext';
-import LoadingBackdrop from './shared/components/LoadingBackdrop';
-import { useLoading } from './shared/components/LoadingContext';
 import reportWebVitals from './reportWebVitals';
+import LoadingBackdrop from './shared/components/LoadingBackdrop';
+import { LoadingProvider } from './shared/components/LoadingContext';
+import { useLoading } from './shared/components/LoadingContext';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

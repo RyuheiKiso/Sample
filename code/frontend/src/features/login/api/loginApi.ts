@@ -1,7 +1,8 @@
 
 import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
-import { AuthServiceClient } from "../../../proto/auth.client";
+
 import { LoginRequest } from "../../../proto/auth";
+import { AuthServiceClient } from "../../../proto/auth.client";
 
 // .envのREACT_APP_BACKEND_URLを参照
 const backendUrl = process.env.REACT_APP_BACKEND_URL || "http://localhost:50051";
