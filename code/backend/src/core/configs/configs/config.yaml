@@ -1,0 +1,2 @@
+# 設定ファイル（サンプル）
+database_url: "sqlite://src/data/app.db"
