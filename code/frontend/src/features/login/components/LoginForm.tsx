@@ -7,27 +7,50 @@ import { login } from "../api/loginApi";
 
 
 
+/**
+ * LoginFormコンポーネントの外部操作用ハンドル
+ */
 export type LoginFormHandle = {
+  /**
+   * フォームのsubmitを外部から実行
+   */
   submit: () => void;
 };
 
+/**
+ * ログインフォームコンポーネント
+ * @param props - なし
+ * @param ref - 外部からsubmitを呼び出すためのref
+ */
 const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
+  // ユーザー名の状態
   const [username, setUsername] = useState("");
+  // パスワードの状態
   const [password, setPassword] = useState("");
+  // ログイントークン（成功時のみセット）
   const [token, setToken] = useState<string | null>(null);
+  // エラーメッセージ（失敗時のみセット）
   const [error, setError] = useState<string | null>(null);
+  // ローディング状態管理（グローバル）
   const { setLoading } = useLoading();
 
+  /**
+   * フォーム送信時の処理
+   * @param e フォームイベント
+   */
   const handleSubmit = React.useCallback(async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     setError(null);
     setLoading(true);
     try {
+      // 認証API呼び出し
       const resp = await login(username, password);
+      // 成功時はトークンをセット
       setToken(resp.token);
     } catch (err: any) {
       // gRPCエラーの内容で分岐
       let message = "予期しないエラーが発生しました。";
+      // ネットワークエラー判定関数
       const isNetworkError = (msg: string) =>
         msg.includes("Failed to fetch") || msg.includes("Load failed");
       if (err && typeof err === "object") {
@@ -48,12 +71,14 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
       } else if (typeof err === "string" && isNetworkError(err)) {
         message = "サーバーに接続できません。ネットワーク環境やサーバーの状態をご確認ください。";
       }
+      // エラーメッセージをセット
       setError(message);
     } finally {
       setLoading(false);
     }
   }, [username, password, setLoading]);
 
+  // 外部からsubmitを呼び出せるようにする
   useImperativeHandle(ref, () => ({
     submit: () => handleSubmit(),
   }), [handleSubmit]);
@@ -61,7 +86,9 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
       <Paper elevation={6} sx={{ p: 4, minWidth: 350 }}>
+        {/* ログインフォーム */}
         <Box component="form" onSubmit={handleSubmit}>
+          {/* ユーザー名入力欄 */}
           <TextField
             label="ユーザー名"
             variant="outlined"
@@ -72,6 +99,7 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
             name="username"
             autoComplete="username"
           />
+          {/* パスワード入力欄 */}
           <TextField
             label="パスワード"
             variant="outlined"
@@ -83,6 +111,7 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
             name="password"
             autoComplete="current-password"
           />
+          {/* ログインボタン */}
           <Button
             type="submit"
             variant="contained"
@@ -92,20 +121,23 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
           >
             ログイン
           </Button>
+          {/* 成功時のトークン表示 */}
           {token && (
             <Alert severity="success" sx={{ mt: 2 }}>
+              {/* 認証成功時のトークン表示 */}
               トークン: {token}
             </Alert>
           )}
+          {/* エラー表示 */}
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>
+              {/* エラーメッセージ表示 */}
               {error}
             </Alert>
           )}
         </Box>
       </Paper>
     </Box>
-
   );
 });
 

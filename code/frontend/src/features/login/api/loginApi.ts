@@ -13,8 +13,15 @@ const transport = new GrpcWebFetchTransport({
 
 const client = new AuthServiceClient(transport);
 
+/**
+ * ログインAPI呼び出し
+ * @param username ユーザー名
+ * @param password パスワード
+ * @returns レスポンス（トークン等）
+ */
 export async function login(username: string, password: string) {
   const req: LoginRequest = { username, password };
   const { response } = await client.login(req);
   return response;
 }
+// バックエンドのgRPCエンドポイントURL（.envのREACT_APP_BACKEND_URLを参照）
