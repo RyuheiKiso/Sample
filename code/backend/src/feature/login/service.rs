@@ -1,5 +1,5 @@
 
-use crate::feature::login::login::repository::{UserRepository, User};
+use crate::feature::login::repository::{UserRepository, User};
 use log::{info, warn, debug};
 use anyhow::{Result, anyhow};
 use jwt::SignWithKey;

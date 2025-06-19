@@ -3,7 +3,7 @@ use log::{info, warn, debug};
 use tonic::{Request, Response, Status};
 use crate::core::generated::auth::{LoginRequest, LoginResponse, User as ProtoUser};
 use crate::core::generated::auth::auth_service_server::AuthService;
-use crate::feature::login::login::service::LoginService;
+use crate::feature::login::service::LoginService;
 use sqlx::SqlitePool;
 
 pub struct GrpcLoginHandler {
@@ -20,7 +20,7 @@ impl AuthService for GrpcLoginHandler {
         info!("gRPC login: リクエスト受信");
         let req = request.into_inner();
         debug!("gRPC login: username='{}'", req.username);
-        let user_repo = crate::feature::login::login::repository::UserRepository { pool: &self.pool };
+        let user_repo = crate::feature::login::repository::UserRepository { pool: &self.pool };
         let service = LoginService { user_repo, jwt_secret: &self.jwt_secret };
         match service.login(&req.username, &req.password).await {
             Ok((token, user)) => {
