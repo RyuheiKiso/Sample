@@ -1,4 +1,4 @@
-use log::{info, warn, debug};
+use log::{info, warn};
 
 use tonic::{Request, Response, Status};
 use crate::core::generated::auth::{LoginRequest, LoginResponse, User as ProtoUser};
@@ -17,9 +17,8 @@ impl AuthService for GrpcLoginHandler {
         &self,
         request: Request<LoginRequest>,
     ) -> Result<Response<LoginResponse>, Status> {
-        info!("gRPC login: リクエスト受信");
         let req = request.into_inner();
-        debug!("gRPC login: username='{}'", req.username);
+        info!("[gRPC login] username='{}' リクエスト受信", req.username);
         let user_repo = crate::feature::login::repository::UserRepository { pool: &self.pool };
         let service = LoginService { user_repo, jwt_secret: &self.jwt_secret };
         match service.login(&req.username, &req.password).await {
@@ -33,11 +32,11 @@ impl AuthService for GrpcLoginHandler {
                     token,
                     user: Some(proto_user),
                 };
-                info!("gRPC login: ユーザー '{}' ログイン成功", req.username);
+                info!("[gRPC login] ユーザー '{}' 認証成功", req.username);
                 Ok(Response::new(resp))
             },
             Err(e) => {
-                warn!("gRPC login: ユーザー '{}' ログイン失敗: {}", req.username, e);
+                warn!("[gRPC login] ユーザー '{}' 認証失敗: {}", req.username, e);
                 Err(Status::unauthenticated(format!("認証失敗: {}", e)))
             }
         }

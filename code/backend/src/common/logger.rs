@@ -15,7 +15,7 @@ pub fn init_logger() {
         .unwrap()
         .log_to_file(FileSpec::default().directory(log_dir))
         .duplicate_to_stdout(Duplicate::All)
-        .format(|w, now, record| {
+        .format(|w, _now, record| {
             write!(w, "[{}] {}", record.level(), &record.args())
         })
         .start()

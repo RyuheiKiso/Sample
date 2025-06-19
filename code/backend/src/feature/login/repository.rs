@@ -17,7 +17,7 @@ pub struct UserRepository<'a> {
 
 impl<'a> UserRepository<'a> {
     pub async fn find_by_username(&self, username: &str) -> Result<Option<User>> {
-        debug!("UserRepository: ユーザー名='{}' で検索", username);
+        debug!("[UserRepository] find_by_username: '{}'", username);
         let rec = sqlx::query_as::<_, User>(
             r#"SELECT id, username, password, display_name FROM user WHERE username = ?"#
         )
@@ -25,9 +25,9 @@ impl<'a> UserRepository<'a> {
         .fetch_optional(self.pool)
         .await?;
         if rec.is_some() {
-            debug!("UserRepository: ユーザー '{}' 見つかりました", username);
+            debug!("[UserRepository] ユーザー '{}' 見つかり", username);
         } else {
-            debug!("UserRepository: ユーザー '{}' 見つかりません", username);
+            debug!("[UserRepository] ユーザー '{}' 見つからず", username);
         }
         Ok(rec)
     }
