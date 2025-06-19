@@ -100,14 +100,16 @@ class LoginRequest$Type extends MessageType<LoginRequest> {
         if (message.password !== "")
             writer.tag(2, WireType.LengthDelimited).string(message.password);
         let u = options.writeUnknownFields;
+        // eslint-disable-next-line eqeqeq
         if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+            (u === true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
         return writer;
     }
 }
 /**
  * @generated MessageType for protobuf message auth.LoginRequest
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginRequest = new LoginRequest$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class LoginResponse$Type extends MessageType<LoginResponse> {
@@ -154,14 +156,16 @@ class LoginResponse$Type extends MessageType<LoginResponse> {
         if (message.user)
             User.internalBinaryWrite(message.user, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
+        // eslint-disable-next-line eqeqeq
         if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+            (u === true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
         return writer;
     }
 }
 /**
  * @generated MessageType for protobuf message auth.LoginResponse
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const LoginResponse = new LoginResponse$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class User$Type extends MessageType<User> {
@@ -219,14 +223,16 @@ class User$Type extends MessageType<User> {
         if (message.displayName !== "")
             writer.tag(3, WireType.LengthDelimited).string(message.displayName);
         let u = options.writeUnknownFields;
+        // eslint-disable-next-line eqeqeq
         if (u !== false)
-            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+            (u === true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
         return writer;
     }
 }
 /**
  * @generated MessageType for protobuf message auth.User
  */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export const User = new User$Type();
 /**
  * @generated ServiceType for protobuf service auth.AuthService
