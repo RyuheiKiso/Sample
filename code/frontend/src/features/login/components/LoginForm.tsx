@@ -1,17 +1,22 @@
 
-import React, { useState } from "react";
+import React, { useState, useImperativeHandle, forwardRef } from "react";
 import { login } from "../api/loginApi";
 import { Box, Button, TextField, Typography, Paper, Alert } from "@mui/material";
 
 
-const LoginForm: React.FC = () => {
+
+export type LoginFormHandle = {
+  submit: () => void;
+};
+
+const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [token, setToken] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = React.useCallback(async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = React.useCallback(async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     setError(null);
     try {
       const resp = await login(username, password);
@@ -21,12 +26,13 @@ const LoginForm: React.FC = () => {
     }
   }, [username, password]);
 
+  useImperativeHandle(ref, () => ({
+    submit: () => handleSubmit(),
+  }), [handleSubmit]);
+
   return (
     <Box display="flex" justifyContent="center" alignItems="center" minHeight="80vh">
       <Paper elevation={6} sx={{ p: 4, minWidth: 350 }}>
-        <Typography variant="h5" align="center" gutterBottom>
-          ログイン
-        </Typography>
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             label="ユーザー名"
@@ -71,7 +77,8 @@ const LoginForm: React.FC = () => {
         </Box>
       </Paper>
     </Box>
+
   );
-};
+});
 
 export default LoginForm;
