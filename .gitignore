@@ -1,0 +1,3 @@
+code/backend/target
+code/backend/Cargo.lock
+code/backend/log/*.log

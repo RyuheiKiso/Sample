@@ -1,0 +1,46 @@
+.footer {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: stretch;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  background: #222;
+  padding: 0;
+  z-index: 100;
+  max-height: 60px; /* 高さの上限を設定（必要に応じて調整） */
+  height: 100%;
+  overflow: hidden;
+}
+.footer-btn {
+  flex: 1 1 0;
+  aspect-ratio: 1 / 1;
+  max-width: calc(100vw / 12);
+  min-width: 0;
+  border: none;
+  background: #444;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: bold;
+  transition: background 0.2s;
+  outline: none;
+  cursor: pointer;
+  max-height: 60px;
+}
+.footer-btn.active,
+.footer-btn:active {
+  background: #1976d2;
+  color: #fff;
+}
+/* 600px以下の画面幅（スマホ・タブレット等）ではフッターを非表示 */
+@media (max-width: 1024px) {
+  .footer {
+    display: none !important;
+  }
+}
+@media (max-width: 600px) {
+  .footer-btn {
+    font-size: 0.8rem;
+  }
+}
