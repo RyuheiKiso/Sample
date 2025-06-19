@@ -20,6 +20,10 @@ anyhow = "1"
 tonic-web = "0.13"
 tower-http = { version = "0.5", features = ["cors"] }
 tower = "0.4"
+hyper = "1"
+hyper-util = "0.1"
+tokio-stream = "0.1"
+axum = "0.7"
 
 [build-dependencies]
 tonic-build = "0.13"
