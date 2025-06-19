@@ -6,6 +6,8 @@ import { useLoading } from '../../../shared/components/LoadingContext';
 import { login } from "../api/loginApi";
 import type { LoginFormHandle } from './login-form.types';
 
+export type { LoginFormHandle };
+
 /**
  * ログインフォームコンポーネント
  * @param props - なし

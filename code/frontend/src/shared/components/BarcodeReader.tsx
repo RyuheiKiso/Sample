@@ -3,6 +3,8 @@ import React, { useRef, useEffect, useState } from 'react';
 import { BrowserMultiFormatReader } from '@zxing/browser';
 import type { BarcodeReaderResult, BarcodeReaderProps } from '../types/barcode-reader';
 
+export type { BarcodeReaderResult };
+
 /**
  * BarcodeReader
  * シンプルなバーコードリーダー（カメラ映像からバーコード/QRコードを検出）
