@@ -1,6 +1,6 @@
 
-import { Box, Button, TextField, Paper, Alert } from "@mui/material";
-import React, { useState, useImperativeHandle, forwardRef } from "react";
+import { Box, Button, TextField, Paper, Alert, Snackbar } from "@mui/material";
+import React, { useState, useImperativeHandle, forwardRef, useEffect } from "react";
 
 import { useLoading } from '../../../shared/components/LoadingContext';
 import { login } from "../api/loginApi";
@@ -33,6 +33,8 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
   const [error, setError] = useState<string | null>(null);
   // ローディング状態管理（グローバル）
   const { setLoading } = useLoading();
+  // エラー用Snackbarの開閉状態
+  const [errorOpen, setErrorOpen] = useState(false);
 
   /**
    * フォーム送信時の処理
@@ -73,10 +75,16 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
       }
       // エラーメッセージをセット
       setError(message);
+      setErrorOpen(true);
     } finally {
       setLoading(false);
     }
   }, [username, password, setLoading]);
+
+  // エラーがセットされたらSnackbarを開く
+  useEffect(() => {
+    if (error) setErrorOpen(true);
+  }, [error]);
 
   // 外部からsubmitを呼び出せるようにする
   useImperativeHandle(ref, () => ({
@@ -128,13 +136,12 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
               トークン: {token}
             </Alert>
           )}
-          {/* エラー表示 */}
-          {error && (
-            <Alert severity="error" sx={{ mt: 2 }}>
-              {/* エラーメッセージ表示 */}
+          {/* エラー通知（Snackbar+Alert） */}
+          <Snackbar open={errorOpen} autoHideDuration={6000} onClose={() => setErrorOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+            <Alert onClose={() => setErrorOpen(false)} severity="error" sx={{ width: '100%' }}>
               {error}
             </Alert>
-          )}
+          </Snackbar>
         </Box>
       </Paper>
     </Box>
