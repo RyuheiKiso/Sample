@@ -130,7 +130,7 @@ const LoginForm = forwardRef<LoginFormHandle>((props, ref) => {
           {/* エラー通知（Snackbar+Alert） */}
           <Snackbar open={errorOpen} autoHideDuration={6000} onClose={() => setErrorOpen(false)} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
             <Alert onClose={() => setErrorOpen(false)} severity="error" sx={{ width: '100%' }}>
-              {error}
+              {error ? decodeURIComponent(error) : ''}
             </Alert>
           </Snackbar>
         </Box>
