@@ -1,3 +1,5 @@
 code/backend/target
 code/backend/Cargo.lock
 code/backend/log/*.log
+tool/nginx/cert.cer
+tool/nginx/key.pem
