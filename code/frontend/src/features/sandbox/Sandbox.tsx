@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 
 // サンドボックス用に共通コンポーネントをimport
 
@@ -10,6 +10,9 @@ import QrReader from '../../shared/components/QrReader';
 import { useQrReader } from '../../shared/hooks/useQrReader';
 import BarcodeReader, { BarcodeReaderResult } from '../../shared/components/BarcodeReader';
 
+// CountdownPanelを追加
+import CountdownPanel, { CountdownPanelHandle } from '../../shared/components/CountdownPanel';
+
 import Select from '@mui/material/Select';
 import MenuItem from '@mui/material/MenuItem';
 import InputLabel from '@mui/material/InputLabel';
@@ -20,6 +23,7 @@ const componentOptions = [
   { label: 'Footer', value: 'Footer' },
   { label: 'QrReader', value: 'QrReader' },
   { label: 'BarcodeReader', value: 'BarcodeReader' },
+  { label: 'CountdownPanel', value: 'CountdownPanel' }, // 追加
 ];
 
 const Sandbox: React.FC = () => {
@@ -38,6 +42,9 @@ const Sandbox: React.FC = () => {
   const [barcodeResult, setBarcodeResult] = useState<BarcodeReaderResult | null>(null);
   // ドロップダウンで選択されたコンポーネント名
   const [selectedComponent, setSelectedComponent] = useState('Header');
+
+  // CountdownPanel用
+  const countdownRef = useRef<CountdownPanelHandle>(null);
 
   return (
     <div style={{ padding: 24 }}>
@@ -85,6 +92,28 @@ const Sandbox: React.FC = () => {
           <BarcodeReader onDetected={setBarcodeResult} width={300} height={200} />
           <div style={{ marginTop: 8 }}>
             検出結果: {barcodeResult ? `${barcodeResult.text} (${barcodeResult.format})` : ''}
+          </div>
+        </section>
+      )}
+      {selectedComponent === 'CountdownPanel' && (
+        <section style={{ marginBottom: 24 }}>
+          <h2>CountdownPanel</h2>
+          <CountdownPanel
+            ref={countdownRef}
+            limitSeconds={90}
+            warnSeconds={10}
+            warnColor="red"
+            height={120}
+            width={320}
+            fontSize={32}
+          />
+          <div style={{ marginTop: 12 }}>
+            <button onClick={() => countdownRef.current?.start()}>開始</button>
+            <button onClick={() => countdownRef.current?.stop()} style={{ marginLeft: 8 }}>停止</button>
+            <button onClick={() => countdownRef.current?.reset()} style={{ marginLeft: 8 }}>リセット</button>
+          </div>
+          <div style={{ marginTop: 12 }}>
+            <span>※画面幅で自動的にPC/スマホ表示が切り替わります。</span>
           </div>
         </section>
       )}
