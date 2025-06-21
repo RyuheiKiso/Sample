@@ -60,7 +60,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         let app = app.clone();
         tokio::spawn(async move {
             let service = app.clone();
-            let mut svc = service;
+            let svc = service;
             let io = TokioIo::new(stream);
             if let Err(e) = http1::Builder::new()
                 .serve_connection(io, service_fn(move |req| svc.clone().call(req)))
