@@ -17,12 +17,14 @@ import Sandbox from './features/sandbox/Sandbox';
  */
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/sandbox" element={<Sandbox />} />
-      </Routes>
-    </BrowserRouter>
+    <div className="App">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/sandbox" element={<Sandbox />} />
+        </Routes>
+      </BrowserRouter>
+    </div>
   );
 }
 
