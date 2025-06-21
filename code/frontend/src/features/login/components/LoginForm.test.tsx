@@ -3,7 +3,7 @@ import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import LoginForm from "./LoginForm";
 
 jest.mock("../api/loginApi", () => ({
-  login: jest.fn(async (username: string) => ({
+  login: jest.fn(async (username: string, password: string) => ({
     token: "mock_token",
     user: { id: 1, username, displayName: "Mock" }
   }))

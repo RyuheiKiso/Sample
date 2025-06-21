@@ -23,6 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     common::logger::init_logger();
     let addr = "0.0.0.0:50051";
     // TLSを使わないため証明書・鍵のパス不要
+    // [注意] 本番環境ではTLS終端をリバースプロキシ等で必ず行い、通信の暗号化を徹底してください。
     let db_url = std::env::var("DATABASE_URL").unwrap_or_else(|_| {
         log::warn!("DATABASE_URLが設定されていません。デフォルトを使用します");
         "sqlite://src/data/app.db".to_string()

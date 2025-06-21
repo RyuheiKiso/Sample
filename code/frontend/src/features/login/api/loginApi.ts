@@ -24,4 +24,4 @@ export async function login(username: string, password: string) {
   const { response } = await client.login(req);
   return response;
 }
-// バックエンドのgRPCエンドポイントURL（.envのREACT_APP_BACKEND_URLを参照）
+// ...existing code...

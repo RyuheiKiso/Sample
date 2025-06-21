@@ -22,5 +22,6 @@ export function useLogin() {
     }
   };
 
+  // ログイン状態・エラー状態・ローディング状態・ログイン実行関数を返却
   return { loading, token, error, doLogin };
 }
