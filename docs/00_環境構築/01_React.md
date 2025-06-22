@@ -68,5 +68,31 @@ npm start
 npx create-react-app my-app --template typescript
 ```
 
----
+
+
+## 6. Protocol Buffers Compiler (protoc) のインストール（macOS）
+
+### Homebrewを使う場合
+
+```sh
+brew install protobuf
+```
+
+インストール後、バージョン確認：
+
+```sh
+protoc --version
+```
+
+### npm scriptsで利用する場合
+
+`package.json` の `devDependencies` に `protoc` が含まれているため、下記コマンドでインストールできます。
+
+```sh
+npm install
+```
+
+> **注意:**
+> npm でインストールできる `protoc` パッケージは公式の Protocol Buffers Compiler とは異なります。
+> gRPC や protobuf ファイルのコンパイル等、公式の `protoc` コマンドが必要な場合は Homebrew などでインストールしてください。
 
